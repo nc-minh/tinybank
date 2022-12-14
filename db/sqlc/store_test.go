@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -33,6 +34,8 @@ func TestTransferTx(t *testing.T) {
 			results <- result
 		}()
 	}
+
+	existed := make(map[int]bool)
 
 	//check results
 	for i := 0; i < n; i++ {
@@ -73,7 +76,37 @@ func TestTransferTx(t *testing.T) {
 		_, err = store.GetEntry(context.Background(), toEntry.ID)
 		require.NoError(t, err)
 
-		// TODO: check accounts' balance
+		// check accounts
+		fromAccount := result.FromAccount
+		require.NotEmpty(t, fromAccount)
+		require.Equal(t, fromAccount.ID, arg.FromAccountID)
 
+		toAccount := result.ToAccount
+		require.NotEmpty(t, toAccount)
+		require.Equal(t, toAccount.ID, arg.ToAccountID)
+
+		// TODO: check accounts' balance
+		fmt.Println(">> before transfer", fromAccount.Balance, toAccount.Balance)
+		diff1 := account1.Balance - fromAccount.Balance
+		diff2 := toAccount.Balance - account2.Balance
+		require.Equal(t, diff1, diff2)
+		require.True(t, diff1 > 0)
+		require.True(t, diff1%amount == 0)
+
+		k := int(diff1 / amount)
+		require.True(t, k >= 1 && k <= n)
+		require.NotContains(t, existed, k)
+		existed[k] = true
+
+		//check the final updated balances
+		updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+		require.NoError(t, err)
+
+		updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+		require.NoError(t, err)
+
+		fmt.Println(">> after transfer", updatedAccount1.Balance, updatedAccount2.Balance)
+		require.Equal(t, updatedAccount1.Balance, account1.Balance-int64(k)*amount)
+		require.Equal(t, updatedAccount2.Balance, account2.Balance+int64(k)*amount)
 	}
 }

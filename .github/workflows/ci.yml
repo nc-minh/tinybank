@@ -13,6 +13,18 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: mars
+          POSTGRES_PASSWORD: mars
+          POSTGRES_DB: tinybank
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
     - uses: actions/checkout@v3
 
@@ -21,5 +33,8 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Test
+    - name: Run migrations
+      run: make migrateup
+
+    - name: Tests
       run: make test

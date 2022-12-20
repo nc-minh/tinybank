@@ -12,10 +12,12 @@ on:
 jobs:
 
   test:
+    name: Test
     runs-on: ubuntu-latest
+
     services:
       postgres:
-        image: postgres:14
+        image: postgres:14-alpine
         env:
           POSTGRES_USER: mars
           POSTGRES_PASSWORD: mars
@@ -37,12 +39,12 @@ jobs:
 
     - name: Install golang-migrate
       run: |
-        curl -O https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
-        sudo mv migrate.linux-amd64.tar.gz /usr/bin/migrate
+        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+        sudo mv migrate.linux-amd64 /usr/bin/migrate
         which migrate
 
     - name: Run migrations
       run: make migrateup
 
-    - name: Tests
+    - name: Test
       run: make test

@@ -33,6 +33,9 @@ jobs:
       with:
         go-version: 1.19
 
+    - name: Install golang-migrate
+      run: $ curl -L https://github.com/golang-migrate/migrate/releases/download/$version/migrate.$platform-amd64.tar.gz | tar xvz
+
     - name: Run migrations
       run: make migrateup
 

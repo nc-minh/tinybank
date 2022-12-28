@@ -1,5 +1,5 @@
 postgres:
-	docker run --name postgres14 -p 5555:5432 -e POSTGRES_USER=mars -e POSTGRES_PASSWORD=mars -d postgres:14
+	docker run --name postgres14 --network bank-network -p 5555:5432 -e POSTGRES_USER=mars -e POSTGRES_PASSWORD=mars -d postgres:14
 
 createdb:
 	docker exec -it postgres14 createdb --username=mars --owner=mars tinybank

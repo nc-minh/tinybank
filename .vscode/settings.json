@@ -1,3 +1,6 @@
 {
-  "docwriter.style": "Auto-detect"
+  "docwriter.style": "Auto-detect",
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "file:///home/mars/Minh%27sLand/tinybank/.github/workflows/deploy.yml"
+  }
 }

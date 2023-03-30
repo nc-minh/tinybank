@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
 	github.com/lib/pq v1.10.7
+	github.com/rakyll/statik v0.1.7
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.4.0
 	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923

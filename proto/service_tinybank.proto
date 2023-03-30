@@ -12,7 +12,7 @@ option go_package = "github.com/nc-minh/tinybank/pb";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
     title: "Tinybank API";
-    version: "1.0";
+    version: "1.1";
     contact: {
       name: "NCM";
       url: "https://github.com/nc-minh";
@@ -27,11 +27,19 @@ service TinyBank{
             post: "/v1/create_user"
             body: "*"
         };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Use this API to create a new user";
+            summary: "Create new user";
+        };
     };
     rpc LoginUser (LoginUserRequest) returns (LoginUserResponse){
         option (google.api.http) = {
             post: "/v1/login_user"
             body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Use this API to login user and get access token & refresh token";
+            summary: "Login user";
         };
     };
 }

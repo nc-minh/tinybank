@@ -8,7 +8,7 @@ import (
 
 var (
 	isValidUsername = regexp.MustCompile(`^[a-z0-9_]+$`).MatchString
-	isValidFullname = regexp.MustCompile(`^[a-zA-Z\\s]+$`).MatchString
+	isValidFullname = regexp.MustCompile(`^[a-zA-Z\s]+$`).MatchString
 )
 
 func ValidateString(value string, minLength int, maxLength int) error {
@@ -40,7 +40,7 @@ func ValidateFullname(username string) error {
 	}
 
 	if !isValidFullname(username) {
-		return fmt.Errorf("username must contain only lowercase letters or spaces")
+		return fmt.Errorf("fullname must contain only lowercase letters or spaces")
 	}
 
 	return nil

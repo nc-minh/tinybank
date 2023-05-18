@@ -5,12 +5,11 @@ name: Run unit tests
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ['master']
   pull_request:
-    branches: [ "master" ]
+    branches: ['master']
 
 jobs:
-
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -29,22 +28,44 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd redis-cli ping
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
 
-    - name: Install golang-migrate
-      run: |
-        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
-        sudo mv migrate.linux-amd64 /usr/bin/migrate
-        which migrate
+      - name: Create app.env file
+        run: |
+          echo "ENV=dev" > app.env
+          echo "DB_DRIVER=postgres" >> app.env
+          echo "DB_SOURCE=postgresql://mars:mars@localhost:5555/tinybank?sslmode=disable" >> app.env
+          echo "HTTP_SERVER_ADDRESS=0.0.0.0:8080" >> app.env
+          echo "GRPC_SERVER_ADDRESS=0.0.0.0:9090" >> app.env
+          echo "TOKEN_SYMMETRIC_KEY=12345678901234567890123456789012" >> app.env
+          echo "ACCESS_TOKEN_DURATION=15m" >> app.env
+          echo "REFRESH_TOKEN_DURATION=24h" >> app.env
+          echo "MIGRATION_URL=file://db/migrations" >> app.env  
+          echo "REDIS_ADDRESS=0.0.0.0:6379" >> app.env
 
-    - name: Run migrations
-      run: make migrateup
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate.linux-amd64 /usr/bin/migrate
+          which migrate
 
-    - name: Test
-      run: make test
+      - name: Run migrations
+        run: make migrateup
+
+      - name: Test
+        run: make test

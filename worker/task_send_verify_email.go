@@ -2,11 +2,12 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	db "github.com/nc-minh/tinybank/db/sqlc"
+	"github.com/nc-minh/tinybank/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -46,13 +47,29 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 
 	user, err := processor.store.GetUser(ctx, payload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("user not found: %w", asynq.SkipRetry)
-		}
+		// if err == sql.ErrNoRows {
+		// 	return fmt.Errorf("user not found: %w", asynq.SkipRetry)
+		// }
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
 	// TODO: send verify email
+	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		Username:   user.Username,
+		Email:      user.Email,
+		SecretCode: utils.RandomString(32),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Welcome to TinyBank"
+	content := fmt.Sprintf("Please verify your email by clicking <a href=\"http://localhost:8080/v1/verify-email?email_id=%d&code=%s\">here</a>", verifyEmail.ID, verifyEmail.SecretCode)
+	to := []string{user.Email}
+	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
 
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).Str("email", user.Email).Msg("processed task")
 

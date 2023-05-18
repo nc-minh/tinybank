@@ -122,6 +122,45 @@
           "TinyBank"
         ]
       }
+    },
+    "/v1/verify-email": {
+      "get": {
+        "summary": "Verify email",
+        "description": "Use this API to verify user's email address",
+        "operationId": "TinyBank_VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbVerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "emailId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TinyBank"
+        ]
+      }
     }
   },
   "definitions": {
@@ -230,6 +269,14 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "pbVerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "isVerified": {
+          "type": "boolean"
         }
       }
     },

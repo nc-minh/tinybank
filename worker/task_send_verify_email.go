@@ -17,7 +17,7 @@ type PayloadSendVerifyEmail struct {
 	Username string `json:"username"`
 }
 
-func (distributor *RedisTaskDistributor) DistrubuteTaskSendVerifyEmail(
+func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	ctx context.Context,
 	payload *PayloadSendVerifyEmail,
 	opts ...asynq.Option,

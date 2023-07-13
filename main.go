@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"net"
 	"net/http"
 	"os"
@@ -12,7 +11,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hibiken/asynq"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nc-minh/tinybank/api"
 	db "github.com/nc-minh/tinybank/db/sqlc"
 	_ "github.com/nc-minh/tinybank/doc/statik"
@@ -40,14 +39,14 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	connPool, err := pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal().Msg("cannot connect to db")
 	}
 
 	runDBMigration(config.MigrationURL, config.DBSource)
 
-	store := db.NewStore(conn)
+	store := db.NewStore(connPool)
 
 	redisOpt := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,
@@ -57,8 +56,8 @@ func main() {
 
 	go runTaskProcessor(config, redisOpt, store)
 	go runGatewayServer(config, store, taskDistributor)
+	go runGinServer(config, store)
 	runGrpcServer(config, store, taskDistributor)
-	// runGinServer(config, store)
 }
 
 func runDBMigration(migrationURL string, dbSource string) {
@@ -91,7 +90,8 @@ func runGinServer(config utils.Config, store db.Store) {
 		log.Fatal().Msg("cannot create server")
 	}
 
-	err = server.Start(config.HTTPServerAddress)
+	log.Printf("start Gin server is listening at %s", config.GINServerAddress)
+	err = server.Start(config.GINServerAddress)
 	if err != nil {
 		log.Fatal().Msg("cannot start server")
 	}
